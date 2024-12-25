@@ -1,7 +1,10 @@
 #include <assert.h>
+#include <raylib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include "./ui.h"
 #include "explorer.h"
@@ -19,12 +22,18 @@ Ui ui_new(
     Ui ui = {
         .exp              = exp,
         .font             = { 0 },
+
         .height           = height,
         .width            = width,
+
         .fontsize         = 50.0f,
         .fontspacing      = 1.5f,
-        .area_filenames   = { 0 },
         .padding          = 30.0f,
+
+        .area_filenames   = { 0 },
+        .filenames_scroll = 0,
+
+
         .color_widget_bg  = (Color) { 30, 30, 30, 255 },
         .color_background = (Color) { 5,  5,  5,  255 },
     };
@@ -66,15 +75,42 @@ static void handle_inputs(Ui *ui) {
         assert(!"Go into directory");
     }
 
+
+    ui->filenames_scroll -= GetMouseWheelMove();
+
+    if (IsKeyPressed(KEY_DOWN))
+        ui->filenames_scroll += 1;
+
+    if (IsKeyPressed(KEY_UP))
+        ui->filenames_scroll -= 1;
+
 }
 
 
 
-static void render_filenames(const Ui *ui) {
+static void render_filenames(Ui *ui) {
 
-    for (size_t i=0; i < ui->exp->filenames.size; ++i) {
+    float available_area   = ui->area_filenames.height - ui->padding*2;
+    size_t entries         = (size_t) available_area / ui->fontsize;
+    ssize_t *scroll_offset = &ui->filenames_scroll;
 
-        char *filename = ui->exp->filenames.items[i];
+    if (*scroll_offset < 0)
+        *scroll_offset = 0;
+
+    size_t max_scroll_offset = ui->exp->filenames.size - entries;
+    if ((size_t) *scroll_offset > max_scroll_offset)
+        *scroll_offset = max_scroll_offset;
+
+
+
+
+
+    for (size_t i=0; i < entries; ++i) {
+
+        char *filename = filenames_get(&ui->exp->filenames, i+*scroll_offset);
+
+        if (filename == NULL)
+            break;
 
         Vector2 position = {
             .x = ui->area_filenames.x + ui->padding,
@@ -115,7 +151,6 @@ void ui_loop(Ui *ui) {
 
             render_filenames(ui);
             handle_inputs(ui);
-
 
         }
         EndDrawing();

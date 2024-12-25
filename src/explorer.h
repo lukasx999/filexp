@@ -21,6 +21,7 @@ extern Filenames filenames_new(void);
 extern void filenames_destroy(Filenames *f);
 extern void filenames_append(Filenames *f, const char *str);
 extern void filenames_clear(Filenames *f);
+extern char* filenames_get(const Filenames *f, size_t index); // returns NULL when indexing out of bounds
 
 
 

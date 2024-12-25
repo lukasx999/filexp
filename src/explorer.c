@@ -59,8 +59,11 @@ void filenames_clear(Filenames *f) {
     *f = filenames_new();
 }
 
-
-
+char* filenames_get(const Filenames *f, size_t index) {
+    return (index >= f->size)
+    ? NULL
+    : f->items[index];
+}
 
 
 
@@ -88,6 +91,12 @@ void exp_destroy(Explorer *exp) {
     filenames_destroy(&exp->filenames);
 }
 
+
+static int sort_alphabetical(const void *a, const void *b) {
+    return strcmp(*(const char**)a, *(const char**)b);
+}
+
+
 int exp_update_files(Explorer *exp) {
     filenames_clear(&exp->filenames);
 
@@ -99,8 +108,17 @@ int exp_update_files(Explorer *exp) {
     struct dirent *directory = NULL;
     while ((directory = readdir(dir)) != NULL) {
         char *name = directory->d_name;
+        if (!strncmp(name, "..", 256) || !strncmp(name, ".", 256))
+            continue;
         filenames_append(&exp->filenames, name);
     }
+
+    qsort(
+        exp->filenames.items,
+        exp->filenames.size,
+        sizeof(char*),
+        sort_alphabetical
+    );
 
     closedir(dir);
     return 0;

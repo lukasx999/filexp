@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <sys/types.h>
 
 #include <raylib.h>
 
@@ -16,6 +17,7 @@ typedef struct {
     Font font;
 
     Rectangle area_filenames;
+    ssize_t filenames_scroll; // signed for bounds checking
 
     float width;
     float height;
