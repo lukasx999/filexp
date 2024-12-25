@@ -8,15 +8,32 @@
 
 
 
-Ui ui_new(Explorer *exp, int width, int height, const char *font_file, const char *title) {
+Ui ui_new(
+    Explorer *exp,
+    int width,
+    int height,
+    const char *font_file,
+    const char *title
+) {
+
     Ui ui = {
-        .exp      = exp,
-        .font     = { 0 },
-        .height   = height,
-        .width    = width,
-        .padding          = 50.0f,
+        .exp              = exp,
+        .font             = { 0 },
+        .height           = height,
+        .width            = width,
+        .fontsize         = 50.0f,
+        .fontspacing      = 1.5f,
+        .area_filenames   = { 0 },
+        .padding          = 30.0f,
         .color_widget_bg  = (Color) { 30, 30, 30, 255 },
-        .color_background = (Color) { 5, 5, 5, 255 },
+        .color_background = (Color) { 5,  5,  5,  255 },
+    };
+
+    ui.area_filenames = (Rectangle) {
+        .x      = ui.padding,
+        .y      = ui.padding,
+        .width  = 1350.0f,
+        .height = ui.height - ui.padding*2,
     };
 
     // this initializes the OpenGL context, so dont put any raylib functions before this line
@@ -60,11 +77,18 @@ static void render_filenames(const Ui *ui) {
         char *filename = ui->exp->filenames.items[i];
 
         Vector2 position = {
-            ui->padding,
-            ui->padding * i + ui->padding,
+            .x = ui->area_filenames.x + ui->padding,
+            .y = (ui->area_filenames.y + ui->padding) + ui->fontsize * i,
         };
 
-        DrawTextEx(ui->font, filename, position, 50, 10, WHITE);
+        DrawTextEx(
+            ui->font,
+            filename,
+            position,
+            ui->fontsize,
+            ui->fontspacing,
+            WHITE
+        );
 
     }
 
@@ -75,17 +99,6 @@ static void render_filenames(const Ui *ui) {
 
 void ui_loop(Ui *ui) {
 
-    float main_area_width = 1350.0f;
-
-
-    Rectangle area_main = {
-        .x      = ui->padding,
-        .y      = ui->padding,
-        .width  = main_area_width,
-        .height = ui->height - ui->padding*2,
-    };
-
-
     // NOTE: Setting dynamic window title messes with DWM
 
     while (!WindowShouldClose()) {
@@ -93,8 +106,12 @@ void ui_loop(Ui *ui) {
         {
             ClearBackground(ui->color_background);
 
-
-            DrawRectangleRounded(area_main, 0.1f, 10.0f, ui->color_widget_bg);
+            DrawRectangleRounded(
+                ui->area_filenames,
+                0.1f,
+                10.0f,
+                ui->color_widget_bg
+            );
 
             render_filenames(ui);
             handle_inputs(ui);

@@ -14,9 +14,16 @@
 typedef struct {
     Explorer *exp;
     Font font;
+
+    Rectangle area_filenames;
+
     float width;
     float height;
     float padding;
+
+    float fontsize;
+    float fontspacing;
+
     Color color_widget_bg;
     Color color_background;
 } Ui;
